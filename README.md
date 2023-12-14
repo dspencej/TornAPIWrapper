@@ -1,5 +1,5 @@
 ![Some Weird Image](https://github.com/cxdzc/TornAPIWrapper/assets/110936008/271aa9c8-280e-4fd9-be9e-cd8b88d53329)
- 
+
 <p align="center">
 <a href="https://pypi.org/project/TornAPIWrapper/"><img src=https://img.shields.io/pypi/v/TornAPIWrapper.svg></a>
 <a href="https://pypi.org/project/TornAPIWrapper/"><img src=https://img.shields.io/pypi/pyversions/TornAPIWrapper.svg></a>
