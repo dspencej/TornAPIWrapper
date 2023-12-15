@@ -1,3 +1,5 @@
+# This page is still being worked on. It will be finished soon.
+
 # Contributing to TornAPIWrapper
 
 I appreciate your interest in contributing. Before starting, please take a moment to review the guidelines outlined below.
