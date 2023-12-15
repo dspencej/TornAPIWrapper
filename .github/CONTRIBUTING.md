@@ -1,14 +1,9 @@
-# This page is still being worked on. It will be finished soon.
-
 # Contributing to TornAPIWrapper
 
-I appreciate your interest in contributing. Before starting, please take a moment to review the guidelines outlined below.
+# 🛂 Ways to Contribute 
+- **🐞 Bug Reports:** If you find any issues or bugs, report them using the [GitHub Issues](https://github.com/cxdzc/TornAPIWrapper/issues/new/choose).
 
-## Ways to Contribute
-
-- **Bug Reports:** If you find any issues or bugs, please report them using the [GitHub Issues](link to your issues page).
-
-- **Feature Requests:** If you have ideas for new features or improvements, feel free to submit a [feature request](link to your issues page).
+- **Feature Requests:** If you have ideas for new features or improvements, feel free to submit a [feature request](https://github.com/cxdzc/TornAPIWrapper/issues/new/choose).
 
 - **Documentation:** Help us improve our documentation. If you find something unclear or missing, submit a pull request with your changes.
 
