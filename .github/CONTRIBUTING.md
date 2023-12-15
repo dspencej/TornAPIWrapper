@@ -3,7 +3,7 @@
 
 - **Feature Requests:** Submit a [Feature Request](https://github.com/cxdzc/TornAPIWrapper/issues/new/choose).
 
-- **Code Contributions:** Follow [pull request](#pull-request).
+- **Code Contributions:** Follow [Pull Request](#pull-request).
 
 # Pull Request
 1. **Code Style:** Follow the existing code style of the project.
