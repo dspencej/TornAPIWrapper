@@ -1,5 +1,5 @@
 # Ways to Contribute 
-- **Bug Reports:** Report them using the [Bug Report](https://github.com/cxdzc/TornAPIWrapper/issues/new/choose).
+- **Bug Reports:** Report bug using the [Bug Report](https://github.com/cxdzc/TornAPIWrapper/issues/new/choose).
 
 - **Feature Requests:** Submit a [Feature Request](https://github.com/cxdzc/TornAPIWrapper/issues/new/choose).
 
