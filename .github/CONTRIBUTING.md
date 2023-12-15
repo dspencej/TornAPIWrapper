@@ -6,7 +6,7 @@
 - **Code Contributions:** Follow [Pull Request](#pull-request).
 
 # Pull Request
-1. **Issue:** Before creating a pull request, find an existing or create an issue to contribute towards.
+1. **Issue:** Before creating a pull request, find an existing or create an [issue](https://github.com/cxdzc/TornAPIWrapper/issues) to contribute towards.
 2. **Code Style:** Follow the existing code style of the project.
 3. **Testing:** Make sure to test changes thoroughly before submitting a pull request.
 4. **Reference Issue:** Include `#issue_number` for the pull request.
