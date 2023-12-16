@@ -26,7 +26,7 @@ There are two Torn City API documentations that I recommend reading to understan
   <img width="75" src="https://contrib.rocks/image?repo=cxdzc/tornapiwrapper"/>
 </a>
 
-[CONTRIBUTING.md](.github/CONTRIBUTING.md)
+[CONTRIBUTING.md](https://github.com/cxdzc/TornAPIWrapper/blob/main/.github%2FCONTRIBUTING.md)
 
 # 💌 Support
 Love open-source projects? Find the project helpful or fun? Support sustainability here, your contribution keeps innovation and fun alive.
