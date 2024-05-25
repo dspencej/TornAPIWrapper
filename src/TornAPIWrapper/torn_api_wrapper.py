@@ -29,6 +29,7 @@ import logging
 import os
 import json
 from .torn_api_error_handler import TornApiErrorHandler
+from .cache import Cache
 from colorama import Fore, Style
 
 
@@ -41,7 +42,7 @@ class TornApiWrapper:
     request_limit = 100  # Max 100 requests per minute
     max_log_entries = 1000  # Maximum number of entries to keep in the log file
 
-    def __init__(self, api_key: str, log_level=logging.INFO, log_directory: str = None):
+    def __init__(self, api_key: str, log_level=logging.INFO, log_directory: str = None, cache_ttl=300):
         """
         Initialize the TornApiWrapper with the provided API key, log level, and optional log directory.
 
@@ -53,6 +54,7 @@ class TornApiWrapper:
         self.api_key = api_key
         self.api_comment = None
         self.api_error_handler = TornApiErrorHandler().api_error_handler
+        self.cache = Cache(ttl=cache_ttl)
 
         # Determine the directory for storing the request log file
         if log_directory is None:
@@ -155,6 +157,12 @@ class TornApiWrapper:
         :param unix_timestamp: UNIX timestamp to get specific stat from date.
         :return: Json-encoded data.
         """
+        cache_key = f"{endpoint}-{input_id}-{selections}-{limit}-{sort}-{stat}-{cat}-{log}-{from_unix}-{to_unix}-{unix_timestamp}"
+        cached_response = self.cache.get(cache_key)
+        if cached_response:
+            self.logger.info(Fore.GREEN + "Cache hit. Returning cached response." + Style.RESET_ALL)
+            return cached_response
+
         self.logger.info(
             Fore.MAGENTA + f"Making API request to endpoint: {endpoint} with input_id: {input_id}" + Style.RESET_ALL)
         self._check_request_limit()  # Check if request limit is exceeded
@@ -184,7 +192,9 @@ class TornApiWrapper:
         response = requests.get(f"{self.base_url}{endpoint}", params=params)
         self._record_request()  # Record the request
         self.logger.info(Fore.MAGENTA + f"Received response with status code: {response.status_code}" + Style.RESET_ALL)
-        return self.api_error_handler(response)
+        response_data = self.api_error_handler(response)
+        self.cache.set(cache_key, response_data)
+        return response_data
 
     def get_user(self, user_id: int = None, selections: List[str] = None, limit: int = None, stat: str = None,
                  cat: int = None, log: int = None, from_unix: int = None, to_unix: int = None,
