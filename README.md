@@ -10,13 +10,14 @@
 A Python wrapper for the [Torn City API](https://www.torn.com/api.html), providing access to [Torn City](https://www.torn.com) data.
 
 # 📠 Instructions
-1. Install the TornAPIWrapper package by typing:
-   ```sh
+1. Install via pip:
+   ```bash
    pip install tornapiwrapper
    ```
 2. Check out the [examples](https://github.com/dspencej/TornAPIWrapper/tree/main/Examples) and [documentation](https://github.com/dspencej/TornAPIWrapper#-documentations) to familiarize yourself with the API.
 3. Create an [API key](https://www.torn.com/preferences.php#tab=api).
-4. Start programming!
+4. Recommend adding your API key to the environmental variable `TORN_KEY`
+5. Start programming!
 
 # 📑 Documentation
 There are two Torn City API documentations that I recommend reading to understand how the API works:
@@ -26,10 +27,13 @@ There are two Torn City API documentations that I recommend reading to understan
 - **[Unofficial Torn API Docs](https://tornapi.tornplayground.eu):** This is a well-documented unofficial source with an active and open-source [repository](https://github.com/Torn-Playground/tornapi-documentation).
 
 # 💝 Contributors
-<a href="https://github.com/dspencej/TornAPIWrapper/graphs/contributors">
-  <img width="75" src="https://contrib.rocks/image?repo=dspencej/TornAPIWrapper"/>
+<a href="https://github.com/cxdzc/tornapiwrapper/graphs/contributors">
+  <img width="75" src="https://contrib.rocks/image?repo=cxdzc/TornAPIWrapper"/>
 </a>
-<br><br>
+
+<a href="https://github.com/cxdzc/tornapiwrapper/graphs/contributors">
+  <img width="75" src="https://avatars.githubusercontent.com/u/110250829?s=60&v=4"/>
+</a>
 
 View [CONTRIBUTING.md](https://github.com/dspencej/TornAPIWrapper/blob/main/.github/CONTRIBUTING.md) to contribute.
 
