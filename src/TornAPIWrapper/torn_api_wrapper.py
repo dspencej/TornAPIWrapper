@@ -65,6 +65,7 @@ class TornApiWrapper:
 
     base_url = "https://api.torn.com"
     request_limit = 100  # Max 100 requests per minute
+    request_count = 0  # Class variable to track the request count
 
     def __init__(self, api_key: str, log_level=logging.INFO):
         self.api_key = api_key
@@ -98,7 +99,9 @@ class TornApiWrapper:
 
     def _record_request(self):
         self.request_times.append(time.time())
-        self.logger.debug(Fore.GREEN + f"Request recorded at {self.request_times[-1]}." + Style.RESET_ALL)
+        TornApiWrapper.request_count += 1  # Increment the class variable for request count
+        self.logger.debug(Fore.GREEN + f"Request recorded at {self.request_times[-1]}. "
+                                       f"Total requests: {TornApiWrapper.request_count}" + Style.RESET_ALL)
 
     def api_request(self, endpoint: str, input_id: int = None, selections: List[str] = None, limit: int = None,
                     sort: str = None, stat: str = None, cat: int = None, log: int = None, from_unix: int = None,
@@ -196,6 +199,7 @@ class TornApiWrapper:
         :return: Json-encoded Torn City faction data.
         """
         self.logger.info(Fore.MAGENTA + f"Fetching faction data for faction_id: {faction_id}" + Style.RESET_ALL)
+
         return self.api_request("/faction", faction_id, selections, limit, sort, stat=None, cat=None, log=None,
                                 from_unix=from_unix, to_unix=to_unix, unix_timestamp=None)
 
