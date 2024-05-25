@@ -39,6 +39,7 @@ class TornApiWrapper:
 
     base_url = "https://api.torn.com"
     request_limit = 100  # Max 100 requests per minute
+    max_log_entries = 1000  # Maximum number of entries to keep in the log file
 
     def __init__(self, api_key: str, log_level=logging.INFO, log_directory: str = None):
         """
@@ -69,14 +70,14 @@ class TornApiWrapper:
         # Ensure the log directory exists
         os.makedirs(self.log_directory, exist_ok=True)
 
-        # Initialize request times from file
-        self.request_times = deque(self._load_request_times())
+        # Initialize request times from file, ensuring old entries are removed
+        self.request_times = deque(self._load_request_times(), maxlen=self.max_log_entries)
 
         self.logger.info(Fore.MAGENTA + "TornApiWrapper initialized with provided API key." + Style.RESET_ALL)
 
     def _load_request_times(self):
         """
-        Load request times from the log file.
+        Load request times from the log file, removing entries older than 1 hour.
 
         :return: List of request timestamps.
         """
@@ -84,6 +85,9 @@ class TornApiWrapper:
             if os.path.exists(self.request_log_file):
                 with open(self.request_log_file, "r") as file:
                     request_times = json.load(file)
+                    # Remove entries older than 1 hour
+                    current_time = time.time()
+                    request_times = [t for t in request_times if t >= current_time - 3600]
                     self.logger.info(Fore.GREEN + "Loaded request times from file." + Style.RESET_ALL)
                     return request_times
         except (IOError, json.JSONDecodeError) as e:
