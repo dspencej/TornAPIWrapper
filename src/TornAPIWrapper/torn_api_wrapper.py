@@ -45,9 +45,10 @@ class TornApiWrapper:
         """
         Initialize the TornApiWrapper with the provided API key, log level, and optional log directory.
 
-        :param api_key: API key used to authenticate API requests. :param log_level: Logging level. :param
-        log_directory: Optional directory to store the request log file. Defaults to a hidden folder in the user's
-        home directory.
+        :param api_key: API key used to authenticate API requests.
+        :param log_level: Logging level.
+        :param log_directory: Optional directory to store the request log file.
+            Defaults to a hidden folder in the user's home directory.
         """
         self.api_key = api_key
         self.api_comment = None
