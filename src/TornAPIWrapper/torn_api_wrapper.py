@@ -141,6 +141,18 @@ class TornApiWrapper:
         self.logger.debug(Fore.GREEN + f"Request recorded at {self.request_times[-1]}." + Style.RESET_ALL)
         self._save_request_times()  # Save updated request times
 
+    @staticmethod
+    def pretty_print(data: dict):
+        """
+        Print JSON data in a pretty format.
+
+        :param data: JSON data to print.
+        """
+        try:
+            print(json.dumps(data, indent=4, sort_keys=True))
+        except (TypeError, ValueError) as e:
+            print(Fore.RED + f"Invalid JSON data: {e}" + Style.RESET_ALL)
+
     def api_request(self, endpoint: str, input_id: int = None, selections: List[str] = None, limit: int = None,
                     sort: str = None, stat: str = None, cat: int = None, log: int = None, from_unix: int = None,
                     to_unix: int = None, unix_timestamp: int = None) -> dict:
