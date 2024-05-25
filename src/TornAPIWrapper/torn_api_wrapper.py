@@ -40,24 +40,37 @@ class TornApiWrapper:
 
     base_url = "https://api.torn.com"
     request_limit = 100  # Max 100 requests per minute
-    request_log_file = "request_log.json"  # File to store request timestamps
 
-    def __init__(self, api_key: str, log_level=logging.INFO):
+    def __init__(self, api_key: str, log_level=logging.INFO, log_directory: str = None):
         """
-        Initialize the TornApiWrapper with the provided API key and log level.
+        Initialize the TornApiWrapper with the provided API key, log level, and optional log directory.
 
-        :param api_key: API key used to authenticate API requests.
-        :param log_level: Logging level.
+        :param api_key: API key used to authenticate API requests. :param log_level: Logging level. :param
+        log_directory: Optional directory to store the request log file. Defaults to a hidden folder in the user's
+        home directory.
         """
         self.api_key = api_key
         self.api_comment = None
         self.api_error_handler = TornApiErrorHandler().api_error_handler
-        self.request_times = deque(self._load_request_times())  # Load request times from file
+
+        # Determine the directory for storing the request log file
+        if log_directory is None:
+            self.log_directory = os.path.join(os.path.expanduser("~"), ".torn_api_wrapper")
+        else:
+            self.log_directory = log_directory
+
+        self.request_log_file = os.path.join(self.log_directory, "request_log.json")
 
         # Configure logging
         logging.basicConfig(level=log_level, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
         self.logger = logging.getLogger(__name__)
         self.logger.setLevel(log_level)
+
+        # Ensure the log directory exists
+        os.makedirs(self.log_directory, exist_ok=True)
+
+        # Initialize request times from file
+        self.request_times = deque(self._load_request_times())
 
         self.logger.info(Fore.MAGENTA + "TornApiWrapper initialized with provided API key." + Style.RESET_ALL)
 
