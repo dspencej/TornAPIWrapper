@@ -127,7 +127,6 @@ class TornApiWrapper:
         self.logger.debug(
             Fore.GREEN + f"Request limit check passed with {len(self.request_times)} "
                          f"requests in the last minute." + Style.RESET_ALL)
-        self._save_request_times()  # Save updated request times
 
     def _record_request(self):
         """
