@@ -24,7 +24,11 @@ SOFTWARE.
 
 import requests
 from typing import Union, List, Dict
+import time
+from collections import deque
+import logging
 from .torn_api_error_handler import TornApiErrorHandler
+from colorama import Fore, Style
 
 
 class TornApiWrapper:
@@ -33,27 +37,68 @@ class TornApiWrapper:
 
     Parameters:
     - api_key (str): API key used to authenticate API requests.
+    - log_level (int, optional): Logging level. Default is logging.INFO.
 
-    Methods: - api_request(self, endpoint: str, input_id: int = None, selections: List[str] = None, limit: int =
-    None, sort: str = None, stat: str = None, cat: int = None, log: int = None, from_unix: int = None, to_unix: int =
-    None, unix_timestamp: int = None) -> dict: Make a request to Torn City API. - get_user(self, user_id: int = None,
-    selections: list = None, limit: int = None, stat: str = None, cat: int = None, log: int = None, from_unix: int =
-    None, to_unix: int = None, unix_timestamp: int = None) -> dict: Get Torn City user data. - get_property(self,
-    property_id: int, selections: list = None) -> dict: Get Torn City property data. - get_faction(self, faction_id:
-    int = None, selections: list = None, limit: int = None, sort: str = None, from_unix: int = None, to_unix: int =
-    None) -> dict: Get Torn City faction data. - get_company(self, company_id: int = None, selections: list = None,
-    limit: int = None, from_unix: int = None, to_unix: int = None) -> dict: Get Torn City company data. - get_market(
-    self, item_id: int, selections: list = None) -> dict: Get Torn City market data. - get_torn(self, torn_id: Union[
-    str, int] = None, selections: List[str] = None) -> dict: Get Torn City data. - get_key_info(self) -> dict: Get
-    Torn City API key data.
+    Methods:
+    - api_request(self, endpoint: str, input_id: int = None, selections: List[str] = None,
+        limit: int = None, sort: str = None, stat: str = None, cat: int = None, log: int = None, from_unix: int = None,
+        to_unix: int = None, unix_timestamp: int = None) -> dict: Make a request to Torn City API.
+
+    - get_user(self, user_id: int = None, selections: list = None, limit: int = None,
+        stat: str = None, cat: int = None, log: int = None, from_unix: int = None, to_unix: int = None,
+        unix_timestamp: int = None) -> dict: Get Torn City user data.
+
+    - get_property(self, property_id: int, selections: list = None) -> dict: Get Torn City property data.
+
+    - get_faction(self, faction_id: int = None, selections: list = None, limit: int = None, sort: str = None,
+        from_unix: int = None, to_unix: int = None) -> dict: Get Torn City faction data.
+
+    - get_company(self, company_id: int = None, selections: list = None, limit: int = None, from_unix: int = None,
+        to_unix: int = None) -> dict: Get Torn City company data.
+
+    - get_market(self, item_id: int, selections: list = None) -> dict: Get Torn City market data.
+
+    - get_torn(self, torn_id: Union[str, int] = None, selections: List[str] = None) -> dict: Get Torn City data.
+
+    - get_key_info(self) -> dict: Get Torn City API key data.
     """
 
     base_url = "https://api.torn.com"
+    request_limit = 100  # Max 100 requests per minute
 
-    def __init__(self, api_key: str):
+    def __init__(self, api_key: str, log_level=logging.INFO):
         self.api_key = api_key
         self.api_comment = None
         self.api_error_handler = TornApiErrorHandler().api_error_handler
+        self.request_times = deque()
+
+        # Configure logging
+        logging.basicConfig(level=log_level, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+        self.logger = logging.getLogger(__name__)
+        self.logger.setLevel(log_level)
+
+        self.logger.info(Fore.MAGENTA + "TornApiWrapper initialized with provided API key." + Style.RESET_ALL)
+
+    def _check_request_limit(self):
+        current_time = time.time()
+        # Remove requests older than 60 seconds
+        while self.request_times and self.request_times[0] < current_time - 60:
+            self.request_times.popleft()
+        if len(self.request_times) >= self.request_limit:
+            self.logger.warning(
+                Fore.YELLOW + "Request limit exceeded: 100 requests per minute. Delaying requests..." + Style.RESET_ALL)
+            while len(self.request_times) >= self.request_limit:
+                time.sleep(1)
+                current_time = time.time()
+                while self.request_times and self.request_times[0] < current_time - 60:
+                    self.request_times.popleft()
+        self.logger.debug(
+            Fore.GREEN + f"Request limit check passed with {len(self.request_times)} "
+                         f"requests in the last minute." + Style.RESET_ALL)
+
+    def _record_request(self):
+        self.request_times.append(time.time())
+        self.logger.debug(Fore.GREEN + f"Request recorded at {self.request_times[-1]}." + Style.RESET_ALL)
 
     def api_request(self, endpoint: str, input_id: int = None, selections: List[str] = None, limit: int = None,
                     sort: str = None, stat: str = None, cat: int = None, log: int = None, from_unix: int = None,
@@ -74,6 +119,9 @@ class TornApiWrapper:
         :param unix_timestamp: UNIX timestamp to get specific stat from date.
         :return: Json-encoded data.
         """
+        self.logger.info(
+            Fore.MAGENTA + f"Making API request to endpoint: {endpoint} with input_id: {input_id}" + Style.RESET_ALL)
+        self._check_request_limit()
         endpoint = f"{endpoint}{'/' + str(input_id) if input_id else ''}"
         params: Dict[str, Union[str, int]] = {"selections": ','.join(selections)} if selections else {}
         params["key"] = self.api_key
@@ -95,7 +143,11 @@ class TornApiWrapper:
             params["timestamp"] = unix_timestamp
         if self.api_comment is not None:
             params["comment"] = self.api_comment
+
+        self.logger.debug(Fore.GREEN + f"Request params: {params}" + Style.RESET_ALL)
         response = requests.get(f"{self.base_url}{endpoint}", params=params)
+        self._record_request()
+        self.logger.info(Fore.MAGENTA + f"Received response with status code: {response.status_code}" + Style.RESET_ALL)
         return self.api_error_handler(response)
 
     def get_user(self, user_id: int = None, selections: List[str] = None, limit: int = None, stat: str = None,
@@ -115,6 +167,7 @@ class TornApiWrapper:
         :param unix_timestamp: UNIX timestamp to get specific stat from date.
         :return: Json-encoded Torn City user data.
         """
+        self.logger.info(Fore.MAGENTA + f"Fetching user data for user_id: {user_id}" + Style.RESET_ALL)
         return self.api_request("/user", user_id, selections, limit, sort=None, stat=stat, cat=cat, log=log,
                                 from_unix=from_unix, to_unix=to_unix, unix_timestamp=unix_timestamp)
 
@@ -126,6 +179,7 @@ class TornApiWrapper:
         :param selections: List of selections from available fields.
         :return: Json-encoded Torn City property data.
         """
+        self.logger.info(Fore.MAGENTA + f"Fetching property data for property_id: {property_id}" + Style.RESET_ALL)
         return self.api_request("/property", property_id, selections)
 
     def get_faction(self, faction_id: int = None, selections: List[str] = None, limit: int = None, sort: str = None,
@@ -141,6 +195,7 @@ class TornApiWrapper:
         :param to_unix: UNIX timestamps to filter results, including entries on or before this timestamp.
         :return: Json-encoded Torn City faction data.
         """
+        self.logger.info(Fore.MAGENTA + f"Fetching faction data for faction_id: {faction_id}" + Style.RESET_ALL)
         return self.api_request("/faction", faction_id, selections, limit, sort, stat=None, cat=None, log=None,
                                 from_unix=from_unix, to_unix=to_unix, unix_timestamp=None)
 
@@ -156,6 +211,7 @@ class TornApiWrapper:
         :param to_unix: UNIX timestamps to filter results, including entries on or before this timestamp.
         :return: Json-encoded Torn City company data.
         """
+        self.logger.info(Fore.MAGENTA + f"Fetching company data for company_id: {company_id}" + Style.RESET_ALL)
         return self.api_request("/company", company_id, selections, limit, sort=None, stat=None, cat=None, log=None,
                                 from_unix=from_unix, to_unix=to_unix, unix_timestamp=None)
 
@@ -167,6 +223,7 @@ class TornApiWrapper:
         :param selections: List of selections from available fields.
         :return: Json-encoded Torn City market data.
         """
+        self.logger.info(Fore.MAGENTA + f"Fetching market data for item_id: {item_id}" + Style.RESET_ALL)
         return self.api_request("/market", item_id, selections)
 
     def get_torn(self, torn_id: Union[str, int] = None, selections: List[str] = None) -> dict:
@@ -177,6 +234,7 @@ class TornApiWrapper:
         :param selections: List of selections from available fields.
         :return: Json-encoded Torn City data.
         """
+        self.logger.info(Fore.MAGENTA + f"Fetching Torn data for torn_id: {torn_id}" + Style.RESET_ALL)
         return self.api_request("/torn", torn_id, selections)
 
     def get_key_info(self) -> dict:
@@ -185,4 +243,5 @@ class TornApiWrapper:
 
         :return: Json-encoded Torn City data.
         """
+        self.logger.info(Fore.MAGENTA + "Fetching API key information" + Style.RESET_ALL)
         return self.api_request("/key", None, ["info"])
