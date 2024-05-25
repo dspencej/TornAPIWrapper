@@ -50,11 +50,11 @@ class TornApiWrapper:
         :param log_level: Logging level.
         :param log_directory: Optional directory to store the request log file.
             Defaults to a hidden folder in the user's home directory.
+        :param cache_ttl: Time-to-live for the cache in seconds.
         """
         self.api_key = api_key
         self.api_comment = None
         self.api_error_handler = TornApiErrorHandler().api_error_handler
-        self.cache = Cache(ttl=cache_ttl)
 
         # Determine the directory for storing the request log file
         if log_directory is None:
@@ -74,6 +74,9 @@ class TornApiWrapper:
 
         # Initialize request times from file, ensuring old entries are removed
         self.request_times = deque(self._load_request_times(), maxlen=self.max_log_entries)
+
+        # Initialize cache
+        self.cache = Cache(ttl=cache_ttl)
 
         self.logger.info(Fore.MAGENTA + "TornApiWrapper initialized with provided API key." + Style.RESET_ALL)
 
@@ -157,7 +160,8 @@ class TornApiWrapper:
         :param unix_timestamp: UNIX timestamp to get specific stat from date.
         :return: Json-encoded data.
         """
-        cache_key = f"{endpoint}-{input_id}-{selections}-{limit}-{sort}-{stat}-{cat}-{log}-{from_unix}-{to_unix}-{unix_timestamp}"
+        cache_key = f"{endpoint}-{input_id}-{selections}-{limit}-{sort}-{stat}-{cat}-{log}"
+
         cached_response = self.cache.get(cache_key)
         if cached_response:
             self.logger.info(Fore.GREEN + "Cache hit. Returning cached response." + Style.RESET_ALL)
@@ -192,6 +196,7 @@ class TornApiWrapper:
         response = requests.get(f"{self.base_url}{endpoint}", params=params)
         self._record_request()  # Record the request
         self.logger.info(Fore.MAGENTA + f"Received response with status code: {response.status_code}" + Style.RESET_ALL)
+
         response_data = self.api_error_handler(response)
         self.cache.set(cache_key, response_data)
         return response_data
