@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "TornAPIWrapper"
-version = "1.0.4"
+version = "1.0.3"
 description = "A Python wrapper for the Torn City API, providing access to Torn City data."
 authors = ["Dustin Spencer <dspencej@gmail.com>", "cxdzc"]
 license = "MIT"
