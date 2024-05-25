@@ -1,7 +1,10 @@
 from TornAPIWrapper import TornApiWrapper
 
-taw = TornApiWrapper(api_key="1aBcDeFgH2iJkLmN") #Insert your API key
+# Initialize the TornApiWrapper with your API key
+taw = TornApiWrapper(api_key="1aBcDeFgH2iJkLmN")  # Insert your API key
 
-data = taw.get_torn(selections=["items"]) #Get Torn City property data.
+# Get Torn City data with selections
+data = taw.get_torn(selections=["items"])
 
+# Print the Torn City data
 print(data)

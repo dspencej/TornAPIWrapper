@@ -1,7 +1,10 @@
 from TornAPIWrapper import TornApiWrapper
 
-taw = TornApiWrapper(api_key="1aBcDeFgH2iJkLmN")  #Insert your API key
+# Initialize the TornApiWrapper with your API key
+taw = TornApiWrapper(api_key="1aBcDeFgH2iJkLmN")  # Insert your API key
 
-data = taw.get_market(336) #Get Torn City property data.
+# Get Torn City market data for item with ID 336
+data = taw.get_market(336)
 
+# Print the market data
 print(data)

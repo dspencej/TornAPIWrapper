@@ -1,7 +1,10 @@
 from TornAPIWrapper import TornApiWrapper
 
-taw = TornApiWrapper(api_key="1aBcDeFgH2iJkLmN") #Insert your API key
+# Initialize the TornApiWrapper with your API key
+taw = TornApiWrapper(api_key="1aBcDeFgH2iJkLmN")  # Insert your API key
 
-data = taw.get_key_info() #Get Torn City API key data.
+# Get Torn City API key data
+data = taw.get_key_info()
 
+# Print the key info data
 print(data)
