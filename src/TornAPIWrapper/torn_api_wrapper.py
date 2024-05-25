@@ -21,7 +21,6 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
-
 import requests
 from typing import Union, List, Dict
 import time
@@ -111,7 +110,9 @@ class TornApiWrapper:
         # Remove requests older than 60 seconds
         while self.request_times and self.request_times[0] < current_time - 60:
             self.request_times.popleft()
-        if len(self.request_times) >= self.request_limit:
+        request_count = len(self.request_times)
+        self.logger.info(Fore.CYAN + f"Number of requests in the last minute: {request_count}" + Style.RESET_ALL)
+        if request_count >= self.request_limit:
             self.logger.warning(
                 Fore.YELLOW + "Request limit exceeded: 100 requests per minute. Delaying requests..." + Style.RESET_ALL)
             while len(self.request_times) >= self.request_limit:
