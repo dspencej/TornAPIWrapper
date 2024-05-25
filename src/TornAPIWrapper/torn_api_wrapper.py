@@ -27,6 +27,8 @@ from typing import Union, List, Dict
 import time
 from collections import deque
 import logging
+import os
+import json
 from .torn_api_error_handler import TornApiErrorHandler
 from colorama import Fore, Style
 
@@ -34,44 +36,23 @@ from colorama import Fore, Style
 class TornApiWrapper:
     """
     A Python wrapper for the Torn City API (https://www.torn.com/api.html), providing access to Torn City data.
-
-    Parameters:
-    - api_key (str): API key used to authenticate API requests.
-    - log_level (int, optional): Logging level. Default is logging.INFO.
-
-    Methods:
-    - api_request(self, endpoint: str, input_id: int = None, selections: List[str] = None,
-        limit: int = None, sort: str = None, stat: str = None, cat: int = None, log: int = None, from_unix: int = None,
-        to_unix: int = None, unix_timestamp: int = None) -> dict: Make a request to Torn City API.
-
-    - get_user(self, user_id: int = None, selections: list = None, limit: int = None,
-        stat: str = None, cat: int = None, log: int = None, from_unix: int = None, to_unix: int = None,
-        unix_timestamp: int = None) -> dict: Get Torn City user data.
-
-    - get_property(self, property_id: int, selections: list = None) -> dict: Get Torn City property data.
-
-    - get_faction(self, faction_id: int = None, selections: list = None, limit: int = None, sort: str = None,
-        from_unix: int = None, to_unix: int = None) -> dict: Get Torn City faction data.
-
-    - get_company(self, company_id: int = None, selections: list = None, limit: int = None, from_unix: int = None,
-        to_unix: int = None) -> dict: Get Torn City company data.
-
-    - get_market(self, item_id: int, selections: list = None) -> dict: Get Torn City market data.
-
-    - get_torn(self, torn_id: Union[str, int] = None, selections: List[str] = None) -> dict: Get Torn City data.
-
-    - get_key_info(self) -> dict: Get Torn City API key data.
     """
 
     base_url = "https://api.torn.com"
     request_limit = 100  # Max 100 requests per minute
-    request_count = 0  # Class variable to track the request count
+    request_log_file = "request_log.json"  # File to store request timestamps
 
     def __init__(self, api_key: str, log_level=logging.INFO):
+        """
+        Initialize the TornApiWrapper with the provided API key and log level.
+
+        :param api_key: API key used to authenticate API requests.
+        :param log_level: Logging level.
+        """
         self.api_key = api_key
         self.api_comment = None
         self.api_error_handler = TornApiErrorHandler().api_error_handler
-        self.request_times = deque()
+        self.request_times = deque(self._load_request_times())  # Load request times from file
 
         # Configure logging
         logging.basicConfig(level=log_level, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
@@ -80,7 +61,38 @@ class TornApiWrapper:
 
         self.logger.info(Fore.MAGENTA + "TornApiWrapper initialized with provided API key." + Style.RESET_ALL)
 
+    def _load_request_times(self):
+        """
+        Load request times from the log file.
+
+        :return: List of request timestamps.
+        """
+        try:
+            if os.path.exists(self.request_log_file):
+                with open(self.request_log_file, "r") as file:
+                    request_times = json.load(file)
+                    self.logger.info(Fore.GREEN + "Loaded request times from file." + Style.RESET_ALL)
+                    return request_times
+        except (IOError, json.JSONDecodeError) as e:
+            self.logger.error(Fore.RED + f"Error loading request times: {e}" + Style.RESET_ALL)
+        return []
+
+    def _save_request_times(self):
+        """
+        Save the current request times to the log file.
+        """
+        try:
+            with open(self.request_log_file, "w") as file:
+                json.dump(list(self.request_times), file)
+                self.logger.info(Fore.GREEN + "Saved request times to file." + Style.RESET_ALL)
+        except IOError as e:
+            self.logger.error(Fore.RED + f"Error saving request times: {e}" + Style.RESET_ALL)
+
     def _check_request_limit(self):
+        """
+        Check if the number of requests in the last minute exceeds the limit.
+        If the limit is exceeded, delay further requests.
+        """
         current_time = time.time()
         # Remove requests older than 60 seconds
         while self.request_times and self.request_times[0] < current_time - 60:
@@ -96,18 +108,21 @@ class TornApiWrapper:
         self.logger.debug(
             Fore.GREEN + f"Request limit check passed with {len(self.request_times)} "
                          f"requests in the last minute." + Style.RESET_ALL)
+        self._save_request_times()  # Save updated request times
 
     def _record_request(self):
+        """
+        Record a new request timestamp.
+        """
         self.request_times.append(time.time())
-        TornApiWrapper.request_count += 1  # Increment the class variable for request count
-        self.logger.debug(Fore.GREEN + f"Request recorded at {self.request_times[-1]}. "
-                                       f"Total requests: {TornApiWrapper.request_count}" + Style.RESET_ALL)
+        self.logger.debug(Fore.GREEN + f"Request recorded at {self.request_times[-1]}." + Style.RESET_ALL)
+        self._save_request_times()  # Save updated request times
 
     def api_request(self, endpoint: str, input_id: int = None, selections: List[str] = None, limit: int = None,
                     sort: str = None, stat: str = None, cat: int = None, log: int = None, from_unix: int = None,
                     to_unix: int = None, unix_timestamp: int = None) -> dict:
         """
-        Make a request to Torn City API.
+        Make a request to the Torn City API.
 
         :param endpoint: API endpoint.
         :param input_id: ID input for endpoint.
@@ -124,7 +139,7 @@ class TornApiWrapper:
         """
         self.logger.info(
             Fore.MAGENTA + f"Making API request to endpoint: {endpoint} with input_id: {input_id}" + Style.RESET_ALL)
-        self._check_request_limit()
+        self._check_request_limit()  # Check if request limit is exceeded
         endpoint = f"{endpoint}{'/' + str(input_id) if input_id else ''}"
         params: Dict[str, Union[str, int]] = {"selections": ','.join(selections)} if selections else {}
         params["key"] = self.api_key
@@ -149,7 +164,7 @@ class TornApiWrapper:
 
         self.logger.debug(Fore.GREEN + f"Request params: {params}" + Style.RESET_ALL)
         response = requests.get(f"{self.base_url}{endpoint}", params=params)
-        self._record_request()
+        self._record_request()  # Record the request
         self.logger.info(Fore.MAGENTA + f"Received response with status code: {response.status_code}" + Style.RESET_ALL)
         return self.api_error_handler(response)
 
@@ -199,7 +214,6 @@ class TornApiWrapper:
         :return: Json-encoded Torn City faction data.
         """
         self.logger.info(Fore.MAGENTA + f"Fetching faction data for faction_id: {faction_id}" + Style.RESET_ALL)
-
         return self.api_request("/faction", faction_id, selections, limit, sort, stat=None, cat=None, log=None,
                                 from_unix=from_unix, to_unix=to_unix, unix_timestamp=None)
 
