@@ -1,19 +1,26 @@
-[build-system]
-requires = ["setuptools>=61.0"]
-build-backend = "setuptools.build_meta"
-
-[project]
-authors = [{name="cxdzc"}]
-classifiers = ["Programming Language :: Python :: 3.8", "Programming Language :: Python :: 3.9", "Programming Language :: Python :: 3.10", "License :: OSI Approved :: MIT License", "Operating System :: OS Independent", ]
-dependencies = ["requests"]
-description = "A Python wrapper for the Torn City API, providing access to Torn City data."
-keywords = ["torn", "torn-city", "torn-city-api", "torncom", "wrapper", "api"]
+[tool.poetry]
 name = "TornAPIWrapper"
+version = "1.0.4"
+description = "A Python wrapper for the Torn City API, providing access to Torn City data."
+authors = ["Dustin Spencer <dspencej@gmail.com>", "cxdzc"]
+license = "MIT"
 readme = "README.md"
-requires-python = ">=3.8"
-version = "1.0.3"
+keywords = ["torn", "torn-city", "torn-city-api", "torncom", "wrapper", "api"]
+homepage = "https://github.com/dspencej/TornAPIWrapper"
+repository = "https://github.com/dspencej/TornAPIWrapper"
+documentation = "https://github.com/dspencej/TornAPIWrapper#-documentations"
+classifiers = [
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent"
+]
 
-[project.urls]
-Homepage = "https://github.com/cxdzc/TornAPIWrapper"
-Repository = "https://github.com/cxdzc/TornAPIWrapper"
-Issues = "https://github.com/cxdzc/TornAPIWrapper/issues"
+[tool.poetry.dependencies]
+python = ">=3.8"
+requests = "^2.25.1"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
