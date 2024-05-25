@@ -21,7 +21,6 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
-
 import requests
 from typing import Union, List, Dict
 import time
@@ -52,12 +51,14 @@ class TornApiWrapper:
         self.api_key = api_key
         self.api_comment = None
         self.api_error_handler = TornApiErrorHandler().api_error_handler
-        self.request_times = deque(self._load_request_times())  # Load request times from file
 
         # Configure logging
         logging.basicConfig(level=log_level, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
         self.logger = logging.getLogger(__name__)
         self.logger.setLevel(log_level)
+
+        # Initialize request times from file
+        self.request_times = deque(self._load_request_times())
 
         self.logger.info(Fore.MAGENTA + "TornApiWrapper initialized with provided API key." + Style.RESET_ALL)
 
@@ -82,6 +83,8 @@ class TornApiWrapper:
         Save the current request times to the log file.
         """
         try:
+            # Ensure the directory for the log file exists
+            os.makedirs(os.path.dirname(self.request_log_file), exist_ok=True)
             with open(self.request_log_file, "w") as file:
                 json.dump(list(self.request_times), file)
                 self.logger.info(Fore.GREEN + "Saved request times to file." + Style.RESET_ALL)
